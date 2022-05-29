@@ -58,7 +58,6 @@ elseif ($IsLinux) {
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
         sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
     }
-
 }
 elseif ($IsWindows) {
     $connSplat = @{
