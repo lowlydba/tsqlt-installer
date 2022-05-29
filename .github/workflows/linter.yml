@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - .vscode/*
+      - readme.MD
   pull_request:
+    paths-ignore:
+      - .vscode/*
+      - readme.MD
 
 jobs:
   build:
