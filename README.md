@@ -1,5 +1,9 @@
 # tSQLt Installer Action
 
+[![Windows](https://github.com/lowlydba/tsqlt-installer/actions/workflows/windows.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/windows.yml)
+[![Linux](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linux.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linux.yml)
+[![Lint](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linter.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linter.yml)
+
 ## Description
 
 A Github Action to install [tSQLt](https://github.com/tSQLt-org/tSQLt) on databases for unit testing.
@@ -40,10 +44,65 @@ Composite
 
     *Default*: `latest`
 
-## Notes
+## Example Workflows
 
-If targeting Azure SQL, version `1-0-5873-27393` must be used. See <https://github.com/tSQLt-org/tSQLt/issues/70> for more information.
+To install using Windows authentication:
 
-## Usage
+```yml
+on: [push]
 
-TBD
+jobs:
+    windows-auth-tsqlt:
+        name: Test installting tSQLt with Windows auth
+        runs-on: windows-latest
+
+    steps:
+        - uses: actions/checkout@v2
+
+        - name: Install SQL Server
+            uses: potatoqualitee/mssqlsuite@v1.4
+            with:
+                install: sqlengine
+
+        - name: Install tSQLt with Windows auth
+            uses: lowlydba/tsqlt-installer@v1
+            with:
+                sql-instance: localhost
+                database: master
+                version: latest
+```
+
+To install using SQL authentication:
+
+```yml
+on: [push]
+
+jobs:
+    windows-auth-tsqlt:
+        name: Test installting tSQLt with Windows auth
+        runs-on: windows-latest
+
+    steps:
+        - uses: actions/checkout@v2
+
+        - name: Install SQL Server
+            uses: potatoqualitee/mssqlsuite@v1.4
+            with:
+                install: sqlengine
+                sa-password: verystrongindeed
+
+    - name: Install tSQLt with SQL auth
+        uses: lowlydba/tsqlt-installer@v1
+        with:
+            sql-instance: localhost
+            database: master
+            version: latest
+            user: sa
+            password: verystrongindeed
+```
+
+## Roadmap
+
+Forthcoming:
+
+* AzureSQL support

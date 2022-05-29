@@ -68,5 +68,3 @@ elseif ($IsWindows) {
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
 }
-
-Write-Output "Installation of tSQLt $Version complete."
