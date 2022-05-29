@@ -44,7 +44,7 @@ if ($IsMacOs) {
 elseif ($IsLinux) {
     if ($User -and $Password) {
         if ($Create) {
-            sqlcmd -S $SqlInstance -d $Database -Q $createDatabaseQuery -U $User -P $Password
+            sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery -U $User -P $Password
         }
         sqlcmd -S $SqlInstance -d $Database -Q $CLRSecurityQuery -U $User -P $Password
         sqlcmd -S $SqlInstance -d $Database -i $setupFile -U $User -P $Password
@@ -52,7 +52,7 @@ elseif ($IsLinux) {
     }
     else {
         if ($Create) {
-            sqlcmd -S $SqlInstance -d $Database -Q $createDatabaseQuery
+            sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery
         }
         sqlcmd -S $SqlInstance -d $Database -Q $CLRSecurityQuery
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
@@ -71,7 +71,7 @@ elseif ($IsWindows) {
     }
 
     if ($Create) {
-        Invoke-SqlCmd @connSplat -Database $Database -Query $createDatabaseQuery -OutputSqlErrors $true
+        Invoke-SqlCmd @connSplat -Database "master" -Query $createDatabaseQuery -OutputSqlErrors $true
     }
     elseif (!(Get-SqlDatabase @connSplat -Name $Database)) {
         Write-Error "Database '$Database' not found." -ErrorAction "Stop"
