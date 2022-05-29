@@ -45,6 +45,7 @@ jobs:
           sa-password: ${{ env.SAPASSWORD }}
 
       - name: Create database
+        shell: pwsh
         run: |
           Invoke-SqlCmd -ServerInstance $Env:SQLINSTANCE -Query "CREATE DATABASE [$Env:DATABASE];" -OutputSqlErrors $true
 
