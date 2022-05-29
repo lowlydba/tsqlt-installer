@@ -48,7 +48,7 @@ elseif ($IsLinux) {
         }
         sqlcmd -S $SqlInstance -d $Database -Q $CLRSecurityQuery -U $User -P $Password
         sqlcmd -S $SqlInstance -d $Database -i $setupFile -U $User -P $Password
-        sqlcmd -S $SqlInstance -d $Database -i $installFile -U $User -P $Password -r1 -m1
+        sqlcmd -S $SqlInstance -d $Database -i $installFile -U $User -P $Password -r1 -m-1
     }
     else {
         if ($Create) {
@@ -56,7 +56,7 @@ elseif ($IsLinux) {
         }
         sqlcmd -S $SqlInstance -d $Database -Q $CLRSecurityQuery
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
-        sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m1
+        sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
     }
 
 }
