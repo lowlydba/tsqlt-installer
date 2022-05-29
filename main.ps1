@@ -38,10 +38,10 @@ catch {
     Write-Error "Unable to download & extract tSQLt from '$DownloadUrl'. Ensure version is valid." -ErrorAction "Stop"
 }
 
-if ($isMacOs) {
+if ($IsMacOs) {
     Write-Output "Only Linux and Windows operation systems supported."
 }
-elseif ($Env) {
+elseif ($IsLinux) {
     if ($User -and $Password) {
         if ($Create) {
             sqlcmd -S $SqlInstance -d $Database -Q $createDatabaseQuery -U $User -P $Password
