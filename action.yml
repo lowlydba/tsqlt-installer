@@ -1,9 +1,9 @@
-name: "tSQLt"
+name: "tSQLt Installer"
 author: "lowlydba"
 branding:
   icon: "database"
   color: "blue"
-description: "Installs tSQLt."
+description: "Installs tSQLt"
 inputs:
   sql-instance:
     description: "Target SQL instance."
