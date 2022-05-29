@@ -44,11 +44,6 @@ jobs:
           install: sqlengine
           sa-password: ${{ env.SAPASSWORD }}
 
-      - name: Create database
-        shell: pwsh
-        run: |
-          Invoke-SqlCmd -ServerInstance $Env:SQLINSTANCE -Query "CREATE DATABASE [$Env:DATABASE];" -OutputSqlErrors $true
-
       - name: Install tSQLt with SQL auth
         uses: ./
         with:
@@ -57,3 +52,4 @@ jobs:
           version: "latest"
           user: "sa"
           password: ${{ env.SAPASSWORD }}
+          create: true

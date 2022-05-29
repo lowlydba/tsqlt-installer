@@ -44,6 +44,12 @@ Composite
 
     *Default*: `latest`
 
+* `create`:
+
+    *Description*: Create database if it doesn't exist.
+
+    *Default*: `false`
+
 ## Example Workflows
 
 To install using Windows authentication:
