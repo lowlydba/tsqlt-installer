@@ -2,7 +2,7 @@
 
 ## Description
 
-A Github Action to install tSQLt on CI databases for unit testing.
+A Github Action to install [tSQLt](https://github.com/tSQLt-org/tSQLt) on databases for unit testing.
 
 ## Action Type
 
