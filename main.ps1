@@ -65,7 +65,7 @@ elseif ($IsWindows) {
         Write-Error "Database '$Database' not found." -ErrorAction "Stop"
     }
     Invoke-SqlCmd @connSplat -Database $Database -Query $CLRSecurityQuery -OutputSqlErrors $true
-    Invoke-SqlCmd @connSplat -Database $Database-InputFile $setupFile -OutputSqlErrors $true
+    Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
 }
 
