@@ -6,11 +6,11 @@ on:
       - main
     paths-ignore:
       - .vscode/*
-      - readme.MD
+      - README.md
   pull_request:
     paths-ignore:
       - .vscode/*
-      - readme.MD
+      - README.md
 
 jobs:
   build:

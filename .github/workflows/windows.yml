@@ -49,14 +49,14 @@ jobs:
           Invoke-SqlCmd -ServerInstance $Env:SQLINSTANCE -Query "CREATE DATABASE [$Env:DATABASE];" -OutputSqlErrors $true
 
       - name: Install tSQLt with Windows auth
-        uses: ./.github/actions/tsqlt
+        uses: ./
         with:
           sql-instance: ${{ env.SQLINSTANCE }}
           database: ${{ env.DATABASE }}
           version: "latest"
 
       - name: Install tSQLt with SQL auth
-        uses: ./.github/actions/tsqlt
+        uses: ./
         with:
           sql-instance: ${{ env.SQLINSTANCE }}
           database: ${{ env.DATABASE }}
