@@ -14,7 +14,7 @@ Composite
 
 ## Author
 
-@lowlydba
+[@lowlydba](https://github.com/lowlydba)
 
 ## Inputs
 
