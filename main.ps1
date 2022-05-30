@@ -32,6 +32,10 @@ if ($IsMacOs) {
     Write-Output "Only Linux and Windows operation systems supported."
 }
 elseif ($IsLinux) {
+    # Docker SQL can be slow to start fully,
+    # bake in a cool off period
+    Start-Sleep -Seconds 3
+
     if ($User -and $Password) {
         if ($Create) {
             sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery -U $User -P $Password
