@@ -6,10 +6,12 @@ on:
     branches:
       - main
     paths-ignore:
-      - .vscode/*
+      - ".vscode/*"
+      - "**.md"
   pull_request:
     paths-ignore:
-      - .vscode/*
+      - ".vscode/*"
+      - "**.md"
 
 # Cancel existing runs on new commits to a branch
 concurrency:
