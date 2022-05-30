@@ -58,24 +58,24 @@ To install using Windows authentication:
 on: [push]
 
 jobs:
-    windows-auth-tsqlt:
-        name: Test installting tSQLt with Windows auth
-        runs-on: windows-latest
+  windows-auth-tsqlt:
+    name: Test installting tSQLt with Windows auth
+    runs-on: windows-latest
 
-    steps:
-        - uses: actions/checkout@v2
+  steps:
+    - uses: actions/checkout@v2
 
-        - name: Install SQL Server
-            uses: potatoqualitee/mssqlsuite@v1.4
-            with:
-                install: sqlengine
+    - name: Install SQL Server
+      uses: potatoqualitee/mssqlsuite@v1.4
+      with:
+        install: sqlengine
 
-        - name: Install tSQLt with Windows auth
-            uses: lowlydba/tsqlt-installer@v1
-            with:
-                sql-instance: localhost
-                database: master
-                version: latest
+    - name: Install tSQLt with Windows auth
+      uses: lowlydba/tsqlt-installer@v1
+      with:
+        sql-instance: localhost
+        database: master
+        version: latest
 ```
 
 To install using SQL authentication:
@@ -84,27 +84,29 @@ To install using SQL authentication:
 on: [push]
 
 jobs:
-    windows-auth-tsqlt:
-        name: Test installting tSQLt with Windows auth
-        runs-on: windows-latest
+ windows-auth-tsqlt:
+  name: Test installting tSQLt with SQL auth
+  runs-on: ubuntu-latest
+  services:
+    sqlserver:
+      image: mcr.microsoft.com/mssql/server:2019-latest
+      ports:
+        - 1433:1433
+      env:
+        ACCEPT_EULA: Y
+        SA_PASSWORD: verystrongindeed
 
     steps:
-        - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-        - name: Install SQL Server
-            uses: potatoqualitee/mssqlsuite@v1.4
-            with:
-                install: sqlengine
-                sa-password: verystrongindeed
-
-    - name: Install tSQLt with SQL auth
+      - name: Install tSQLt with SQL auth
         uses: lowlydba/tsqlt-installer@v1
         with:
-            sql-instance: localhost
-            database: master
-            version: latest
-            user: sa
-            password: verystrongindeed
+          sql-instance: localhost
+          database: master
+          version: latest
+          user: sa
+          password: verystrongindeed
 ```
 
 ## Notes

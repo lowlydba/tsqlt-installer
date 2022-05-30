@@ -12,17 +12,7 @@ param(
 $DownloadUrl = "http://tsqlt.org/download/tsqlt/?version=$Version"
 $zipFile = Join-Path $TempDir "tSQLt.zip"
 $zipFolder = Join-Path $TempDir "tSQLt"
-$CLRSecurityQuery = "
-/* Turn off CLR Strict for 2017+ fix */
-IF EXISTS (SELECT 1 FROM sys.configurations WHERE name = 'clr strict security')
-BEGIN
-	EXEC sp_configure 'show advanced options', 1;
-	RECONFIGURE;
 
-	EXEC sp_configure 'clr strict security', 0;
-	RECONFIGURE;
-END
-GO"
 $createDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
 CREATE DATABASE [$Database];"
 
@@ -42,11 +32,14 @@ if ($IsMacOs) {
     Write-Output "Only Linux and Windows operation systems supported."
 }
 elseif ($IsLinux) {
+    # Docker SQL can be slow to start fully,
+    # bake in a cool off period
+    Start-Sleep -Seconds 3
+
     if ($User -and $Password) {
         if ($Create) {
             sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery -U $User -P $Password
         }
-        sqlcmd -S $SqlInstance -d $Database -Q $CLRSecurityQuery -U $User -P $Password
         sqlcmd -S $SqlInstance -d $Database -i $setupFile -U $User -P $Password
         sqlcmd -S $SqlInstance -d $Database -i $installFile -U $User -P $Password -r1 -m-1
     }
@@ -54,7 +47,6 @@ elseif ($IsLinux) {
         if ($Create) {
             sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery
         }
-        sqlcmd -S $SqlInstance -d $Database -Q $CLRSecurityQuery
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
         sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
     }
@@ -75,8 +67,6 @@ elseif ($IsWindows) {
     elseif (!(Get-SqlDatabase @connSplat -Name $Database)) {
         Write-Error "Database '$Database' not found." -ErrorAction "Stop"
     }
-
-    Invoke-SqlCmd @connSplat -Database $Database -Query $CLRSecurityQuery -OutputSqlErrors $true
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
 }
