@@ -23,6 +23,10 @@ inputs:
     description: "Version to install."
     required: false
     default: "latest"
+  create:
+    description: "Create the database if it doesn't exist."
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -34,6 +38,7 @@ runs:
           Version = "${{ inputs.version }}"
           User = "${{ inputs.user }}"
           Password = "${{ inputs.password }}"
+          Create = $${{ inputs.create }}
         }
 
         ${{github.action_path}}/main.ps1 @params

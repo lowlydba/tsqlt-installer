@@ -6,10 +6,12 @@ on:
     branches:
       - main
     paths-ignore:
-      - .vscode/*
+      - ".vscode/*"
+      - "**.md"
   pull_request:
     paths-ignore:
-      - .vscode/*
+      - ".vscode/*"
+      - "**.md"
 
 # Cancel existing runs on new commits to a branch
 concurrency:
@@ -25,6 +27,14 @@ jobs:
   integration:
     runs-on: ${{ matrix.os }}
     name: linux
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: "Y"
+          SA_PASSWORD: ${{ env.SAPASSWORD }}
     strategy:
       fail-fast: false
       matrix:
@@ -38,16 +48,6 @@ jobs:
           path: ""
           ref: ${{ github.head_ref }}
 
-      - name: Install SQL Server
-        uses: potatoqualitee/mssqlsuite@v1.4
-        with:
-          install: sqlengine
-          sa-password: ${{ env.SAPASSWORD }}
-
-      - name: Create database
-        run: |
-          Invoke-SqlCmd -ServerInstance $Env:SQLINSTANCE -Query "CREATE DATABASE [$Env:DATABASE];" -OutputSqlErrors $true
-
       - name: Install tSQLt with SQL auth
         uses: ./
         with:
@@ -56,3 +56,4 @@ jobs:
           version: "latest"
           user: "sa"
           password: ${{ env.SAPASSWORD }}
+          create: true

@@ -6,10 +6,12 @@ on:
     branches:
       - main
     paths-ignore:
-      - .vscode/*
+      - ".vscode/*"
+      - "**.md"
   pull_request:
     paths-ignore:
-      - .vscode/*
+      - ".vscode/*"
+      - "**.md"
 
 # Cancel existing runs on new commits to a branch
 concurrency:
@@ -43,16 +45,13 @@ jobs:
           install: sqlengine
           sa-password: ${{ env.SAPASSWORD }}
 
-      - name: Create database
-        run: |
-          Invoke-SqlCmd -ServerInstance $Env:SQLINSTANCE -Query "CREATE DATABASE [$Env:DATABASE];" -OutputSqlErrors $true
-
       - name: Install tSQLt with Windows auth
         uses: ./
         with:
           sql-instance: ${{ env.SQLINSTANCE }}
           database: ${{ env.DATABASE }}
           version: "latest"
+          create: true
 
       - name: Re-create database
         run: |

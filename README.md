@@ -44,6 +44,12 @@ Composite
 
     *Default*: `latest`
 
+* `create`:
+
+    *Description*: Create database if it doesn't exist.
+
+    *Default*: `false`
+
 ## Example Workflows
 
 To install using Windows authentication:
@@ -100,6 +106,12 @@ jobs:
             user: sa
             password: verystrongindeed
 ```
+
+## Notes
+
+* Any invalid version strings are equal to `latest`
+* Known version strings:
+  * `1-0-5873-27393` - For SQL 2005 and Azure SQL.
 
 ## Roadmap
 
