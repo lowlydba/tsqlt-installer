@@ -36,6 +36,7 @@ elseif ($IsLinux) {
         if ($Create) {
             sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery -U $User -P $Password
         }
+
         sqlcmd -S $SqlInstance -d $Database -i $setupFile -U $User -P $Password
         sqlcmd -S $SqlInstance -d $Database -i $installFile -U $User -P $Password -r1 -m-1
     }
@@ -43,6 +44,7 @@ elseif ($IsLinux) {
         if ($Create) {
             sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery
         }
+
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
         sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
     }
