@@ -6,46 +6,79 @@ param(
     [string]$TempDir = $Env:RUNNER_TEMP,
     [string]$User,
     [string]$Password,
-    [switch]$Create
+    [switch]$CreateDatabase,
+    [switch]$Update
 )
 
-$DownloadUrl = "http://tsqlt.org/download/tsqlt/?version=$Version"
+# Vars
 $zipFile = Join-Path $TempDir "tSQLt.zip"
 $zipFolder = Join-Path $TempDir "tSQLt"
-
-$createDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
+$CreateDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
 CREATE DATABASE [$Database];"
+$uninstallQuery = "IF EXISTS (SELECT name FROM sys.procedures WHERE name = N'Uninstall' AND SCHEMA_NAME(schema_id) = N'tsqlt')
+EXEC [tsqlt].[Uninstall];"
+$azureSqlQuery = "SELECT SERVERPROPERTY('Version')"
+$azureVersion = "1-0-5873-27393"
 
+# Exit if MacOS
+if ($IsMacOs) {
+    Write-Output "Only Linux and Windows operation systems supported at this time."
+}
+else {
+    Write-Output "Thanks for using tSQLt-Installer!"
+    Write-Output "tSQLt Website: https://tsqlt.org/"
+    Write-Output "Action Repository: https://github.com/lowlydba/tsqlt-installer"
+    Write-Output "Please :star: if you like!"
+}
+
+# Is the target Azure SQL?
+#TODO
+if ($isLinux) {
+    $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery -U $User -P $Password -Output
+}
+elseif ($IsWindows) {
+    $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSQLQuery -OutputSqlErrors $true
+}
+if ($isAzure) {
+    Write-Output "Azure SQL target detected. Setting version to '$azureVersion'."
+    $Version = $azureVersion
+}
+
+# Download
 try {
-    Write-Output "Downloading $DownloadUrl"
-    Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -ErrorAction Stop -UseBasicParsing
+    $DownloadUrl = "http://tsqlt.org/download/tsqlt/?version=$Version"
+    Write-Output "Downloading from $DownloadUrl"
+    Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -ErrorAction "Stop" -UseBasicParsing
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
     $installFile = (Get-ChildItem $zipFolder -Filter "tSQLt.class.sql").FullName
     $setupFile = (Get-ChildItem $zipFolder -Filter "PrepareServer.sql").FullName
     Write-Output "Download complete."
 }
 catch {
-    Write-Error "Unable to download & extract tSQLt from '$DownloadUrl'. Ensure version is valid." -ErrorAction "Stop"
+    Write-Error "Unable to download & extract tSQLt: $($_.Exception.Message)" -ErrorAction "Stop"
 }
 
-if ($IsMacOs) {
-    Write-Output "Only Linux and Windows operation systems supported."
-}
-elseif ($IsLinux) {
-    # Docker SQL can be slow to start fully,
-    # bake in a cool off period
+# Install
+if ($IsLinux) {
+    # Docker SQL can be slow to start fully, bake in a cool off period
     Start-Sleep -Seconds 3
 
     if ($User -and $Password) {
-        if ($Create) {
-            sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery -U $User -P $Password
+        if ($CreateDatabase) {
+            sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery -U $User -P $Password
+        }
+        if ($Update) {
+            sqlcmd -S $SqlInstance -d $Databaseq -Q $uninstallQuery -U $User -P $Password
         }
         sqlcmd -S $SqlInstance -d $Database -i $setupFile -U $User -P $Password
         sqlcmd -S $SqlInstance -d $Database -i $installFile -U $User -P $Password -r1 -m-1
     }
     else {
-        if ($Create) {
-            sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseQuery
+        if ($CreateDatabase) {
+            sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery
+        }
+        if ($Update) {
+            sqlcmd -S $SqlInstance -d $Databaseq -Q $uninstallQuery
         }
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
         sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
@@ -61,11 +94,11 @@ elseif ($IsWindows) {
         $connSplat.add("Credential", $Credential)
     }
 
-    if ($Create) {
-        Invoke-SqlCmd @connSplat -Database "master" -Query $createDatabaseQuery -OutputSqlErrors $true
+    if ($CreateDatabase) {
+        Invoke-SqlCmd @connSplat -Database "master" -Query $CreateDatabaseDatabaseQuery -OutputSqlErrors $true
     }
-    elseif (!(Get-SqlDatabase @connSplat -Name $Database)) {
-        Write-Error "Database '$Database' not found." -ErrorAction "Stop"
+    if ($Update) {
+        Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
     }
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true

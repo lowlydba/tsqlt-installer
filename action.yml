@@ -23,8 +23,12 @@ inputs:
     description: "Version to install."
     required: false
     default: "latest"
-  create:
+  create-database:
     description: "Create the database if it doesn't exist."
+    required: false
+    default: "false"
+  update:
+    description: "Update (uninstall/reinstall) if tSQLt already exists."
     required: false
     default: "false"
 runs:
@@ -38,7 +42,8 @@ runs:
           Version = "${{ inputs.version }}"
           User = "${{ inputs.user }}"
           Password = "${{ inputs.password }}"
-          Create = $${{ inputs.create }}
+          CreateDatabase = $${{ inputs.create-database }}
+          Update = $${{ inputd.update }}
         }
 
         ${{github.action_path}}/main.ps1 @params
