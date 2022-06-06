@@ -13,6 +13,7 @@ param(
 # Vars
 $zipFile = Join-Path $TempDir "tSQLt.zip"
 $zipFolder = Join-Path $TempDir "tSQLt"
+$installFileName = "tsqlt.class.sql"
 $CreateDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
 CREATE DATABASE [$Database];"
 $uninstallQuery = "IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[tsqlt].[Uninstall]')) EXEC [tsqlt].[Uninstall];"
@@ -24,10 +25,9 @@ if ($IsMacOs) {
     Write-Output "Only Linux and Windows operation systems supported at this time."
 }
 else {
-    Write-Output "Thanks for using tSQLt-Installer!"
+    Write-Output "Thanks for using tSQLt-Installer! Please ⭐ if you like!"
     Write-Output "tSQLt Website: https://tsqlt.org/"
     Write-Output "Action Repository: https://github.com/lowlydba/tsqlt-installer"
-    Write-Output "Please ⭐ if you like!"
     Write-Output "======================"
 }
 
@@ -52,11 +52,21 @@ try {
     $DownloadUrl = "http://tsqlt.org/download/tsqlt/?version=$Version"
     Write-Output "Downloading from $DownloadUrl"
     Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -ErrorAction "Stop" -UseBasicParsing
+    Write-Output "Download complete."
+
+    Write-Output "Unzipping $zipFile"
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
-    $installFile = (Get-ChildItem $zipFolder -Filter "tSQLt.class.sql").FullName
+    $installFile = (Get-ChildItem $zipFolder -Filter $installFileName).FullName
     # Setup file varies depending on version - will be one or the other
     $setupFile = (Get-ChildItem $zipFolder -Include "PrepareServer.sql", "SetClrEnabled.sql").FullName 
-    Write-Output "Download complete."
+
+    # Validate files exist
+    if (!(Test-Path $installFile)) {
+        Write-Error -Message "Unable to find installer file '$installFileName'."
+    }
+    if (!(Test-Path $setupFile)) {
+        Write-Error -Message "Unable to find setup file."
+    }
 }
 catch {
     Write-Error "Unable to download & extract tSQLt: $($_.Exception.Message)" -ErrorAction "Stop"
@@ -68,9 +78,11 @@ if ($IsLinux) {
     Start-Sleep -Seconds 3
 
     if ($CreateDatabase -and (-not $isAzure)) {
+        Write-Output "Creating '$Database'"
         sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery
     }
     if ($Update) {
+        Write-Output "Uninstalling old tSQLt if present."
         sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery
     }
     sqlcmd -S $SqlInstance -d $Database -i $setupFile
@@ -87,9 +99,11 @@ elseif ($IsWindows) {
     }
 
     if ($CreateDatabase) {
+        Write-Output "Creating '$Database'"
         Invoke-SqlCmd @connSplat -Database "master" -Query $CreateDatabaseDatabaseQuery -OutputSqlErrors $true
     }
     if ($Update) {
+        Write-Output "Uninstalling old tSQLt if present."
         Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
     }
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
