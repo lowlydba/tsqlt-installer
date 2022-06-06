@@ -34,15 +34,24 @@ else {
 # Is the target Azure SQL?
 if ($isLinux) {
     if ($User -and $Password) {
-        $Env:SQLCMDUSER = $User 
+        $Env:SQLCMDUSER = $User
         $Env:SQLCMDPASSWORD = $Password
     }
     $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery
 }
 elseif ($IsWindows) {
+    $connSplat = @{
+        ServerInstance = $SqlInstance
+    }
+    if ($User -and $Password) {
+        $SecPass = ConvertTo-SecureString -String $Password -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $SecPass
+        $connSplat.add("Credential", $Credential)
+    }
+
     $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSqlQuery -OutputSqlErrors $true
 }
-if ($isAzure) {
+if ($isAzure -and ($Version -ne $azureVersion)) {
     Write-Output "Azure SQL target detected. Setting version to '$azureVersion'."
     $Version = $azureVersion
 }
@@ -58,7 +67,7 @@ try {
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
     $installFile = (Get-ChildItem $zipFolder -Filter $installFileName).FullName
     # Setup file varies depending on version - will be one or the other
-    $setupFile = (Get-ChildItem $zipFolder | Where-Object Name -in ("PrepareServer.sql", "SetClrEnabled.sql")).FullName 
+    $setupFile = (Get-ChildItem $zipFolder | Where-Object Name -in ("PrepareServer.sql", "SetClrEnabled.sql")).FullName
 
     # Validate files exist
     if (!(Test-Path $installFile)) {
@@ -82,10 +91,10 @@ if ($IsLinux) {
         sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery
     }
     if ($Update) {
-        Write-Output "Uninstalling old tSQLt if present."
+        Write-Output "Uninstalling old tSQLt."
         sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery
     }
-    
+
     # Azure doesn't need CLR setup
     if (!$isAzure) {
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
@@ -93,21 +102,12 @@ if ($IsLinux) {
     sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
 }
 elseif ($IsWindows) {
-    $connSplat = @{
-        ServerInstance = $SqlInstance
-    }
-    if ($User -and $Password) {
-        $SecPass = ConvertTo-SecureString -String $Password -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $SecPass
-        $connSplat.add("Credential", $Credential)
-    }
-
     if ($CreateDatabase) {
         Write-Output "Creating '$Database'"
         Invoke-SqlCmd @connSplat -Database "master" -Query $CreateDatabaseDatabaseQuery -OutputSqlErrors $true
     }
     if ($Update) {
-        Write-Output "Uninstalling old tSQLt if present."
+        Write-Output "Uninstalling old tSQLt."
         Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
     }
 
