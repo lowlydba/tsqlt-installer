@@ -44,9 +44,15 @@ Composite
 
     *Default*: `latest`
 
-* `create`:
+* `create-database`:
 
     *Description*: Create database if it doesn't exist.
+
+    *Default*: `false`
+
+* `update`:
+
+    *Description*: Uninstalls and reinstalls if tSQLt is already present.
 
     *Default*: `false`
 

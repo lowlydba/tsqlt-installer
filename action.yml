@@ -43,7 +43,7 @@ runs:
           User = "${{ inputs.user }}"
           Password = "${{ inputs.password }}"
           CreateDatabase = $${{ inputs.create-database }}
-          Update = $${{ inputd.update }}
+          Update = $${{ inputs.update }}
         }
 
         ${{github.action_path}}/main.ps1 @params
