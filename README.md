@@ -2,6 +2,7 @@
 
 [![Windows](https://github.com/lowlydba/tsqlt-installer/actions/workflows/windows.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/windows.yml)
 [![Linux](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linux.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linux.yml)
+[![AzureSQL](https://github.com/lowlydba/tsqlt-installer/actions/workflows/azuresql.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/azuresql.yml)
 [![Lint](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linter.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linter.yml)
 
 ## Description
