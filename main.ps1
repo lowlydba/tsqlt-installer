@@ -55,6 +55,10 @@ try {
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
     $installFile = (Get-ChildItem $zipFolder -Filter "tSQLt.class.sql").FullName
     $setupFile = (Get-ChildItem $zipFolder -Filter "PrepareServer.sql").FullName
+    # Try legacy setup file
+    if ($null -eq $setupFile) {
+        $setupFile = (Get-ChildItem $zipFolder -Filter "SetClrEnabled.sql").FullName
+    }
     Write-Output "Download complete."
 }
 catch {
