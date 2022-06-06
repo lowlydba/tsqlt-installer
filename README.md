@@ -6,7 +6,9 @@
 
 ## Description
 
-A Github Action to install [tSQLt](https://github.com/tSQLt-org/tSQLt) on databases for unit testing. Pull requests are welcome!
+A Github Action to install [tSQLt](https://github.com/tSQLt-org/tSQLt) on SQL Server and AzureSQL databases for unit testing.
+
+Pull requests are welcome!
 
 ## Action Type
 

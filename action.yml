@@ -24,11 +24,11 @@ inputs:
     required: false
     default: "latest"
   create-database:
-    description: "Create the database if it doesn't exist."
+    description: "Create the database if not present."
     required: false
     default: "false"
   update:
-    description: "Update (uninstall/reinstall) if tSQLt already exists."
+    description: "Update (uninstall/reinstall) if tSQLt is present."
     required: false
     default: "false"
 runs:
@@ -46,4 +46,4 @@ runs:
           Update = $${{ inputs.update }}
         }
 
-        ${{github.action_path}}/main.ps1 @params
+        ${{ github.action_path }}/main.ps1 @params
