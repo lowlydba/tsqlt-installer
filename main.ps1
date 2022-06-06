@@ -15,9 +15,9 @@ $zipFile = Join-Path $TempDir "tSQLt.zip"
 $zipFolder = Join-Path $TempDir "tSQLt"
 $CreateDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
 CREATE DATABASE [$Database];"
-$uninstallQuery = "IF EXISTS (SELECT name FROM sys.procedures WHERE name = N'Uninstall' AND SCHEMA_NAME(schema_id) = N'tsqlt')
-EXEC [tsqlt].[Uninstall];"
-$azureSqlQuery = "SELECT SERVERPROPERTY('Version')"
+$uninstallQuery = "IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[tsqlt].[Uninstall]') AND type in (N'P', N'PC'))
+    EXEC [tsqlt].[Uninstall];"
+$azureSqlQuery = "IF (SERVERPROPERTY('Edition') = 'SQL Azure') SELECT 1"
 $azureVersion = "1-0-5873-27393"
 
 # Exit if MacOS
@@ -28,11 +28,10 @@ else {
     Write-Output "Thanks for using tSQLt-Installer!"
     Write-Output "tSQLt Website: https://tsqlt.org/"
     Write-Output "Action Repository: https://github.com/lowlydba/tsqlt-installer"
-    Write-Output "Please :star: if you like!"
+    Write-Output "Please ⭐ if you like!"
 }
 
 # Is the target Azure SQL?
-#TODO
 if ($isLinux) {
     $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery -U $User -P $Password -Output
 }
@@ -64,24 +63,17 @@ if ($IsLinux) {
     Start-Sleep -Seconds 3
 
     if ($User -and $Password) {
-        if ($CreateDatabase) {
-            sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery -U $User -P $Password
-        }
-        if ($Update) {
-            sqlcmd -S $SqlInstance -d $Databaseq -Q $uninstallQuery -U $User -P $Password
-        }
-        sqlcmd -S $SqlInstance -d $Database -i $setupFile -U $User -P $Password
-        sqlcmd -S $SqlInstance -d $Database -i $installFile -U $User -P $Password -r1 -m-1
+        $Env:SQLCMDUSER = $User 
+        $Env:SQLCMDPASSWORD = $Password
     }
-    else {
-        if ($CreateDatabase) {
-            sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery
-        }
-        if ($Update) {
-            sqlcmd -S $SqlInstance -d $Databaseq -Q $uninstallQuery
-        }
-        sqlcmd -S $SqlInstance -d $Database -i $setupFile
-        sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
+    if ($CreateDatabase) {
+        sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery
+    }
+    if ($Update) {
+        sqlcmd -S $SqlInstance -d $Databaseq -Q $uninstallQuery
+    }
+    sqlcmd -S $SqlInstance -d $Database -i $setupFile
+    sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
     }
 }
 elseif ($IsWindows) {

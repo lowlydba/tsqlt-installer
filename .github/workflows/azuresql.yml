@@ -19,22 +19,15 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SQLINSTANCE: "localhost"
-  DATABASE: "tsqlt"
-  SAPASSWORD: "L0wlydb4"
+  SQLINSTANCE: "expresssql.database.windows.net"
+  DATABASE: "expresssql"
+  SAPASSWORD: ${{ env.AZURE_SQL_PASSWORD }}
+  SA: ${{ env.AZURE_SQL_LOGIN }}
 
 jobs:
   integration:
     runs-on: ${{ matrix.os }}
     name: linux
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-latest
-        ports:
-          - 1433:1433
-        env:
-          ACCEPT_EULA: "Y"
-          SA_PASSWORD: "L0wlydb4"
     strategy:
       fail-fast: false
       matrix:
@@ -47,12 +40,13 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Install tSQLt with SQL auth
+      - name: Install tSQLt
         uses: ./
         with:
           sql-instance: ${{ env.SQLINSTANCE }}
           database: ${{ env.DATABASE }}
           version: "latest"
-          user: "sa"
+          user: ${{ env.SA }}
           password: ${{ env.SAPASSWORD }}
           create-database: true
+          update: true
