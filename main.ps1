@@ -58,7 +58,7 @@ try {
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
     $installFile = (Get-ChildItem $zipFolder -Filter $installFileName).FullName
     # Setup file varies depending on version - will be one or the other
-    $setupFile = (Get-ChildItem $zipFolder -Include "PrepareServer.sql", "SetClrEnabled.sql").FullName 
+    $setupFile = (Get-ChildItem $zipFolder | Where-Object Name -in ("PrepareServer.sql", "SetClrEnabled.sql")).FullName 
 
     # Validate files exist
     if (!(Test-Path $installFile)) {
