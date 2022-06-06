@@ -85,7 +85,11 @@ if ($IsLinux) {
         Write-Output "Uninstalling old tSQLt if present."
         sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery
     }
-    sqlcmd -S $SqlInstance -d $Database -i $setupFile
+    
+    # Azure doesn't need CLR setup
+    if (!$isAzure) {
+        sqlcmd -S $SqlInstance -d $Database -i $setupFile
+    }
     sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
 }
 elseif ($IsWindows) {
@@ -106,6 +110,10 @@ elseif ($IsWindows) {
         Write-Output "Uninstalling old tSQLt if present."
         Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
     }
-    Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
+
+    # Azure doesn't need CLR setup
+    if (!$isAzure) {
+        Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
+    }
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
 }
