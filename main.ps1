@@ -15,8 +15,7 @@ $zipFile = Join-Path $TempDir "tSQLt.zip"
 $zipFolder = Join-Path $TempDir "tSQLt"
 $CreateDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
 CREATE DATABASE [$Database];"
-$uninstallQuery = "IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[tsqlt].[Uninstall]') AND type in (N'P', N'PC'))
-    EXEC [tsqlt].[Uninstall];"
+$uninstallQuery = "IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[tsqlt].[Uninstall]')) EXEC [tsqlt].[Uninstall];"
 $azureSqlQuery = "IF (SERVERPROPERTY('Edition') = 'SQL Azure') SELECT 1"
 $azureVersion = "1-0-5873-27393"
 
@@ -29,14 +28,19 @@ else {
     Write-Output "tSQLt Website: https://tsqlt.org/"
     Write-Output "Action Repository: https://github.com/lowlydba/tsqlt-installer"
     Write-Output "Please ⭐ if you like!"
+    Write-Output "======================"
 }
 
 # Is the target Azure SQL?
 if ($isLinux) {
-    $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery -U $User -P $Password
+    if ($User -and $Password) {
+        $Env:SQLCMDUSER = $User 
+        $Env:SQLCMDPASSWORD = $Password
+    }
+    $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery
 }
 elseif ($IsWindows) {
-    $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSQLQuery -OutputSqlErrors $true
+    $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSqlQuery -OutputSqlErrors $true
 }
 if ($isAzure) {
     Write-Output "Azure SQL target detected. Setting version to '$azureVersion'."
@@ -62,15 +66,11 @@ if ($IsLinux) {
     # Docker SQL can be slow to start fully, bake in a cool off period
     Start-Sleep -Seconds 3
 
-    if ($User -and $Password) {
-        $Env:SQLCMDUSER = $User 
-        $Env:SQLCMDPASSWORD = $Password
-    }
-    if ($CreateDatabase) {
+    if ($CreateDatabase -and (-not $isAzure)) {
         sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery
     }
     if ($Update) {
-        sqlcmd -S $SqlInstance -d $Databaseq -Q $uninstallQuery
+        sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery
     }
     sqlcmd -S $SqlInstance -d $Database -i $setupFile
     sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
