@@ -1,5 +1,5 @@
 ---
-name: Windows
+name: AzureSQL
 on:
   workflow_dispatch:
   push:
@@ -19,19 +19,20 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SQLINSTANCE: "localhost"
-  DATABASE: "tsqlt"
-  SAPASSWORD: "L0wlydb4"
+  SQLINSTANCE: "expresssql.database.windows.net"
+  DATABASE: "expresssql"
+  SAPASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
+  SA: ${{ secrets.AZURE_SQL_LOGIN }}
 
 jobs:
   integration:
     runs-on: ${{ matrix.os }}
-    name: windows
+    name: linux
     strategy:
       fail-fast: false
       matrix:
         os:
-          - windows-latest
+          - ubuntu-latest
 
     steps:
       - name: Check out code
@@ -39,26 +40,13 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Install SQL Server
-        uses: potatoqualitee/mssqlsuite@v1.5
-        with:
-          install: sqlengine
-          sa-password: ${{ env.SAPASSWORD }}
-
-      - name: Install tSQLt with Windows auth
+      - name: Install tSQLt
         uses: ./
         with:
           sql-instance: ${{ env.SQLINSTANCE }}
           database: ${{ env.DATABASE }}
           version: "latest"
-          create-database: true
-
-      - name: Install tSQLt with SQL auth
-        uses: ./
-        with:
-          sql-instance: ${{ env.SQLINSTANCE }}
-          database: ${{ env.DATABASE }}
-          version: "latest"
-          user: "sa"
+          user: ${{ env.SA }}
           password: ${{ env.SAPASSWORD }}
+          create-database: true
           update: true

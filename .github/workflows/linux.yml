@@ -55,4 +55,4 @@ jobs:
           version: "latest"
           user: "sa"
           password: ${{ env.SAPASSWORD }}
-          create: true
+          create-database: true

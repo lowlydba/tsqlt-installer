@@ -2,11 +2,14 @@
 
 [![Windows](https://github.com/lowlydba/tsqlt-installer/actions/workflows/windows.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/windows.yml)
 [![Linux](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linux.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linux.yml)
+[![AzureSQL](https://github.com/lowlydba/tsqlt-installer/actions/workflows/azuresql.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/azuresql.yml)
 [![Lint](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linter.yml/badge.svg)](https://github.com/lowlydba/tsqlt-installer/actions/workflows/linter.yml)
 
 ## Description
 
-A Github Action to install [tSQLt](https://github.com/tSQLt-org/tSQLt) on databases for unit testing.
+A Github Action to install [tSQLt](https://github.com/tSQLt-org/tSQLt) on SQL Server and AzureSQL databases for unit testing.
+
+Pull requests are welcome!
 
 ## Action Type
 
@@ -44,9 +47,15 @@ Composite
 
     *Default*: `latest`
 
-* `create`:
+* `create-database`:
 
     *Description*: Create database if it doesn't exist.
+
+    *Default*: `false`
+
+* `update`:
+
+    *Description*: Uninstalls and reinstalls if tSQLt is already present.
 
     *Default*: `false`
 
@@ -114,9 +123,4 @@ jobs:
 * Any invalid version strings are equal to `latest`
 * Known version strings:
   * `1-0-5873-27393` - For SQL 2005 and Azure SQL.
-
-## Roadmap
-
-Forthcoming:
-
-* AzureSQL support
+* Ensure firewall exceptions are in place for Azure SQL targets.
