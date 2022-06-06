@@ -53,10 +53,6 @@ jobs:
           version: "latest"
           create-database: true
 
-      - name: Re-create database
-        run: |
-          Invoke-SqlCmd -ServerInstance $Env:SQLINSTANCE -Query "DROP DATABASE IF EXISTS [$Env:DATABASE]; CREATE DATABASE [$Env:DATABASE];" -OutputSqlErrors $true
-
       - name: Install tSQLt with SQL auth
         uses: ./
         with:
