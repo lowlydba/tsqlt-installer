@@ -54,11 +54,8 @@ try {
     Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -ErrorAction "Stop" -UseBasicParsing
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
     $installFile = (Get-ChildItem $zipFolder -Filter "tSQLt.class.sql").FullName
-    $setupFile = (Get-ChildItem $zipFolder -Filter "PrepareServer.sql").FullName
-    # Try legacy setup file
-    if ($null -eq $setupFile) {
-        $setupFile = (Get-ChildItem $zipFolder -Filter "SetClrEnabled.sql").FullName
-    }
+    # Setup file varies depending on version - will be one or the other
+    $setupFile = (Get-ChildItem $zipFolder -Include "PrepareServer.sql", "SetClrEnabled.sql").FullName 
     Write-Output "Download complete."
 }
 catch {
