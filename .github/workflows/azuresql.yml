@@ -21,8 +21,8 @@ concurrency:
 env:
   SQLINSTANCE: "expresssql.database.windows.net"
   DATABASE: "expresssql"
-  SAPASSWORD: ${{ env.AZURE_SQL_PASSWORD }}
-  SA: ${{ env.AZURE_SQL_LOGIN }}
+  SAPASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
+  SA: ${{ secrets.AZURE_SQL_LOGIN }}
 
 jobs:
   integration:
