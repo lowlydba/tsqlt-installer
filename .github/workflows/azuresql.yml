@@ -1,5 +1,5 @@
 ---
-name: Linux
+name: AzureSQL
 on:
   workflow_dispatch:
   push:
