@@ -33,7 +33,7 @@ else {
 
 # Is the target Azure SQL?
 if ($isLinux) {
-    $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery -U $User -P $Password -Output
+    $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery -U $User -P $Password
 }
 elseif ($IsWindows) {
     $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSQLQuery -OutputSqlErrors $true
