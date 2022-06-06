@@ -14,7 +14,8 @@ param(
 $zipFile = Join-Path $TempDir "tSQLt.zip"
 $zipFolder = Join-Path $TempDir "tSQLt"
 $installFileName = "tsqlt.class.sql"
-$CreateDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
+$setupFileNames = @("PrepareServer.sql", "SetClrEnabled.sql") # Setup file varies depending on version - will be one or the other
+$createDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
 CREATE DATABASE [$Database];"
 $uninstallQuery = "IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[tsqlt].[Uninstall]')) EXEC [tsqlt].[Uninstall];"
 $azureSqlQuery = "IF (SERVERPROPERTY('Edition') = 'SQL Azure') SELECT 1"
@@ -51,9 +52,15 @@ elseif ($IsWindows) {
 
     $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSqlQuery -OutputSqlErrors $true
 }
-if ($isAzure -and ($Version -ne $azureVersion)) {
-    Write-Output "Azure SQL target detected. Setting version to '$azureVersion'."
-    $Version = $azureVersion
+if ($isAzure) {
+    if ($Version -ne $azureVersion) {
+        Write-Output "Azure SQL target detected. Setting version to '$azureVersion'."
+        $Version = $azureVersion
+    }
+    if ($CreateDatabase) {
+        Write-Output "Unable to create a database on Azure SQL - assuming target database exists."
+        $CreateDatabase = $false
+    }
 }
 
 # Download
@@ -66,15 +73,14 @@ try {
     Write-Output "Unzipping $zipFile"
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
     $installFile = (Get-ChildItem $zipFolder -Filter $installFileName).FullName
-    # Setup file varies depending on version - will be one or the other
-    $setupFile = (Get-ChildItem $zipFolder | Where-Object Name -in ("PrepareServer.sql", "SetClrEnabled.sql")).FullName
+    $setupFile = (Get-ChildItem $zipFolder | Where-Object Name -in $setupFileNames).FullName
 
     # Validate files exist
     if (!(Test-Path $installFile)) {
         Write-Error -Message "Unable to find installer file '$installFileName'."
     }
     if (!(Test-Path $setupFile)) {
-        Write-Error -Message "Unable to find setup file."
+        Write-Error -Message "Unable to find either setup file: $setupFileNames"
     }
 }
 catch {
@@ -86,15 +92,14 @@ if ($IsLinux) {
     # Docker SQL can be slow to start fully, bake in a cool off period
     Start-Sleep -Seconds 3
 
-    if ($CreateDatabase -and (-not $isAzure)) {
+    if ($CreateDatabase) {
         Write-Output "Creating '$Database'"
-        sqlcmd -S $SqlInstance -d "master" -Q $CreateDatabaseDatabaseQuery
+        sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseDatabaseQuery
     }
     if ($Update) {
         Write-Output "Uninstalling old tSQLt."
         sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery
     }
-
     # Azure doesn't need CLR setup
     if (!$isAzure) {
         sqlcmd -S $SqlInstance -d $Database -i $setupFile
@@ -104,13 +109,12 @@ if ($IsLinux) {
 elseif ($IsWindows) {
     if ($CreateDatabase) {
         Write-Output "Creating '$Database'"
-        Invoke-SqlCmd @connSplat -Database "master" -Query $CreateDatabaseDatabaseQuery -OutputSqlErrors $true
+        Invoke-SqlCmd @connSplat -Database "master" -Query $createDatabaseDatabaseQuery -OutputSqlErrors $true
     }
     if ($Update) {
         Write-Output "Uninstalling old tSQLt."
         Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
     }
-
     # Azure doesn't need CLR setup
     if (!$isAzure) {
         Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
