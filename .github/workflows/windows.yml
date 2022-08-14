@@ -12,6 +12,8 @@ on:
     paths-ignore:
       - ".vscode/*"
       - "**.md"
+  schedule:
+    - cron: "0 6 * * *"
 
 # Cancel existing runs on new commits to a branch
 concurrency:
