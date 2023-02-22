@@ -93,7 +93,7 @@ To install using SQL authentication:
 on: [push]
 
 jobs:
- windows-auth-tsqlt:
+ sql-auth-tsqlt:
   name: Test installting tSQLt with SQL auth
   runs-on: ubuntu-latest
   services:
