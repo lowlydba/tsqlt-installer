@@ -92,8 +92,8 @@ if ($IsLinux) {
     Start-Sleep -Seconds 3
 
     if ($CreateDatabase) {
-        Write-Output "Creating '$Database'"
-        sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseDatabaseQuery
+        Write-Output "Creating database '$Database'"
+        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseDatabaseQuery 2>&1
     }
     if ($Update) {
         Write-Output "Uninstalling old tSQLt."
@@ -101,9 +101,11 @@ if ($IsLinux) {
     }
     # Azure doesn't need CLR setup
     if (!$isAzure) {
-        sqlcmd -S $SqlInstance -d $Database -i $setupFile
+        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $setupFile 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
+        Write-Output $sqlcmdOutput
     }
-    sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1
+    $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
+    Write-Output $sqlcmdOutput
 }
 elseif ($IsWindows) {
     if ($CreateDatabase) {
