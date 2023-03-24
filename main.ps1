@@ -22,13 +22,7 @@ $azureVersion = "1-0-5873-27393"
 
 # Exit if MacOS
 if ($IsMacOs) {
-    Write-Output "Only Linux and Windows supported at this time."
-}
-else {
-    Write-Output "Thanks for using tSQLt-Installer! Please ⭐ if you like!"
-    Write-Output "tSQLt Website: https://tsqlt.org/"
-    Write-Output "Action Repository: https://github.com/lowlydba/tsqlt-installer"
-    Write-Output "======================"
+    Write-Error -Message "Only Linux and Windows supported at this time."
 }
 
 # Is the target Azure SQL?
@@ -97,7 +91,7 @@ if ($IsLinux) {
     }
     if ($Update) {
         Write-Output "Uninstalling old tSQLt."
-        sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery
+        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery 2>&1
     }
     # Azure doesn't need CLR setup
     if (!$isAzure) {
@@ -105,7 +99,9 @@ if ($IsLinux) {
     }
     Write-Output "Installing tSQLt."
     $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
-    Write-Output $sqlcmdOutput | Out-String
+    foreach ($line in $sqlcmdOutput) {
+        Write-Verbose ($line | Out-String) -Verbose
+    }
 }
 elseif ($IsWindows) {
     if ($CreateDatabase) {
@@ -123,3 +119,7 @@ elseif ($IsWindows) {
     Write-Output "Installing tSQLt."
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
 }
+
+Write-Output "Thanks for using tSQLt-Installer! Please ⭐ if you like!"
+Write-Output "tSQLt Website: https://tsqlt.org/"
+Write-Output "Action Repository: https://github.com/lowlydba/tsqlt-installer"
