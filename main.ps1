@@ -100,7 +100,9 @@ if ($IsLinux) {
     Write-Output "Installing tSQLt"
     $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
     foreach ($errorRecord in $sqlcmdOutput) {
-        Write-Verbose -Message $errorRecord.Exception.Message -Verbose
+        if ($null -ne $errorRecord.Exception.Message) {
+            Write-Verbose -Message $errorRecord.Exception.Message -Verbose
+        }
     }
 }
 elseif ($IsWindows) {
