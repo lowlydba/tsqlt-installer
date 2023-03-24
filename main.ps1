@@ -11,19 +11,18 @@ param(
 )
 
 # Vars
-$zipFile = Join-Path $TempDir "tSQLt.zip"
-$zipFolder = Join-Path $TempDir "tSQLt"
+$zipFile = Join-Path -Path $TempDir -ChildPath "tSQLt.zip"
+$zipFolder = Join-Path -Path $TempDir -ChildPath "tSQLt"
 $installFileName = "tsqlt.class.sql"
 $setupFileNames = @("PrepareServer.sql", "SetClrEnabled.sql") # Setup file varies depending on version - will be one or the other
-$createDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database')
-CREATE DATABASE [$Database];"
-$uninstallQuery = "IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[tsqlt].[Uninstall]')) EXEC [tsqlt].[Uninstall];"
+$createDatabaseDatabaseQuery = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$Database') CREATE DATABASE [$Database];"
+$uninstallQuery = "IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[tsqlt].[Uninstall]')) EXEC [tsqlt].[Uninstall];"
 $azureSqlQuery = "IF (SERVERPROPERTY('Edition') = 'SQL Azure') SELECT 1"
 $azureVersion = "1-0-5873-27393"
 
 # Exit if MacOS
 if ($IsMacOs) {
-    Write-Output "Only Linux and Windows operation systems supported at this time."
+    Write-Output "Only Linux and Windows supported at this time."
 }
 else {
     Write-Output "Thanks for using tSQLt-Installer! Please ⭐ if you like!"
@@ -72,12 +71,12 @@ try {
 
     Write-Output "Unzipping $zipFile"
     Expand-Archive -Path $zipFile -DestinationPath $zipFolder -Force
-    $installFile = (Get-ChildItem $zipFolder -Filter $installFileName).FullName
-    $setupFile = (Get-ChildItem $zipFolder | Where-Object Name -in $setupFileNames).FullName
+    $installFile = (Get-ChildItem -Path $zipFolder -Filter $installFileName).FullName
+    $setupFile = (Get-ChildItem -Path $zipFolder | Where-Object Name -in $setupFileNames).FullName
 
     # Validate files exist
     if (!(Test-Path $installFile)) {
-        Write-Error -Message "Unable to find installer file '$installFileName'."
+        Write-Error -Message "Unable to find installer file: '$installFileName'."
     }
     if (!(Test-Path $setupFile)) {
         Write-Error -Message "Unable to find either setup file: $setupFileNames"
