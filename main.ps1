@@ -7,7 +7,7 @@ param(
     [string]$User,
     [string]$Password,
     [switch]$CreateDatabase,
-    [switch]$Update
+    [bool]$Update = $false
 )
 
 # Vars
@@ -102,10 +102,10 @@ if ($IsLinux) {
     # Azure doesn't need CLR setup
     if (!$isAzure) {
         $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $setupFile 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
-        Write-Output $sqlcmdOutput
+        Write-Output $sqlcmdOutput | Out-String
     }
     $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
-    Write-Output $sqlcmdOutput
+    Write-Output $sqlcmdOutput | Out-String
 }
 elseif ($IsWindows) {
     if ($CreateDatabase) {
