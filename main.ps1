@@ -33,6 +33,9 @@ else {
 
 # Is the target Azure SQL?
 if ($isLinux) {
+    # Docker SQL can be slow to start fully, bake in a cool off period
+    Start-Sleep -Seconds 3
+
     if ($User -and $Password) {
         $Env:SQLCMDUSER = $User
         $Env:SQLCMDPASSWORD = $Password
@@ -88,9 +91,6 @@ catch {
 
 # Install
 if ($IsLinux) {
-    # Docker SQL can be slow to start fully, bake in a cool off period
-    Start-Sleep -Seconds 3
-
     if ($CreateDatabase) {
         Write-Output "Creating database '$Database'"
         $sqlcmdOutput = & sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseDatabaseQuery 2>&1
@@ -101,9 +101,9 @@ if ($IsLinux) {
     }
     # Azure doesn't need CLR setup
     if (!$isAzure) {
-        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $setupFile 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
-        Write-Output $sqlcmdOutput | Out-String
+        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $setupFile 2>&1
     }
+    Write-Output "Installing tSQLt."
     $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
     Write-Output $sqlcmdOutput | Out-String
 }
@@ -120,5 +120,6 @@ elseif ($IsWindows) {
     if (!$isAzure) {
         Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
     }
+    Write-Output "Installing tSQLt."
     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
 }
