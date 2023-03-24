@@ -42,7 +42,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Install SQL Server
-        uses: potatoqualitee/mssqlsuite@v1.5
+        uses: potatoqualitee/mssqlsuite@v1.7
         with:
           install: sqlengine
           sa-password: ${{ env.SAPASSWORD }}
