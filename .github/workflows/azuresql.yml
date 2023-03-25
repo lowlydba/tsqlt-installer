@@ -42,7 +42,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Install tSQLt
+      - name: Install/Update tSQLt
         uses: ./
         with:
           sql-instance: ${{ env.SQLINSTANCE }}

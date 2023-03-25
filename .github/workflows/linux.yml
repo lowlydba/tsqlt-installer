@@ -58,3 +58,14 @@ jobs:
           user: "sa"
           password: ${{ env.SAPASSWORD }}
           create-database: true
+
+      - name: Update tSQLt with SQL auth
+        uses: ./
+        with:
+          sql-instance: ${{ env.SQLINSTANCE }}
+          database: ${{ env.DATABASE }}
+          version: "latest"
+          user: "sa"
+          password: ${{ env.SAPASSWORD }}
+          create-database: true
+          update: true
