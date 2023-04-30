@@ -84,7 +84,7 @@ catch {
 }
 
 # Install
-if ($IsLinux) {
+if ($IsLinux -or $IsWindows) {
     if ($CreateDatabase) {
         Write-Output "Creating database [$Database]"
         $sqlcmdOutput = & sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseDatabaseQuery 2>&1
@@ -105,22 +105,22 @@ if ($IsLinux) {
         }
     }
 }
-elseif ($IsWindows) {
-    if ($CreateDatabase) {
-        Write-Output "Creating [$Database]"
-        Invoke-SqlCmd @connSplat -Database "master" -Query $createDatabaseDatabaseQuery -OutputSqlErrors $true
-    }
-    if ($Update) {
-        Write-Output "Uninstalling previous tSQLt"
-        Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
-    }
-    # Azure doesn't need CLR setup
-    if (!$isAzure) {
-        Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
-    }
-    Write-Output "Installing tSQLt"
-    Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
-}
+# elseif ($IsWindows) {
+#     if ($CreateDatabase) {
+#         Write-Output "Creating [$Database]"
+#         Invoke-SqlCmd @connSplat -Database "master" -Query $createDatabaseDatabaseQuery -OutputSqlErrors $true
+#     }
+#     if ($Update) {
+#         Write-Output "Uninstalling previous tSQLt"
+#         Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
+#     }
+#     # Azure doesn't need CLR setup
+#     if (!$isAzure) {
+#         Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
+#     }
+#     Write-Output "Installing tSQLt"
+#     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
+# }
 
 Write-Output "Thanks for using tSQLt-Installer! Please ⭐ if you like!"
 Write-Output "tSQLt Website: https://tsqlt.org/"
