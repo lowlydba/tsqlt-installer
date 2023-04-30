@@ -25,29 +25,15 @@ if ($IsMacOs) {
     Write-Error -Message "Only Linux and Windows supported at this time."
 }
 
-# Is the target Azure SQL?
-if ($isLinux -or $IsWindows) {
-    # Docker SQL can be slow to start fully, bake in a cool off period
-    Start-Sleep -Seconds 3
+# Docker SQL can be slow to start fully, bake in a cool off period
+Start-Sleep -Seconds 3
 
-    if ($User -and $Password) {
-        $Env:SQLCMDUSER = $User
-        $Env:SQLCMDPASSWORD = $Password
-    }
-    $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery
+if ($User -and $Password) {
+    $Env:SQLCMDUSER = $User
+    $Env:SQLCMDPASSWORD = $Password
 }
-# elseif ($IsWindows) {
-#     $connSplat = @{
-#         ConnectionString = "Data Source=$SqlInstance;Integrated Security=True;TrustServerCertificate=true"
-#     }
-#     if ($User -and $Password) {
-#         $SecPass = ConvertTo-SecureString -String $Password -AsPlainText -Force
-#         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $SecPass
-#         $connSplat.add("Credential", $Credential)
-#     }
+$isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery
 
-#     $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSqlQuery -OutputSqlErrors $true
-# }
 if ($isAzure) {
     if ($Version -ne $azureVersion) {
         Write-Output "Azure SQL target detected. Setting version to '$azureVersion'."
@@ -84,43 +70,25 @@ catch {
 }
 
 # Install
-if ($IsLinux -or $IsWindows) {
-    if ($CreateDatabase) {
-        Write-Output "Creating database [$Database]"
-        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseDatabaseQuery 2>&1
-    }
-    if ($Update) {
-        Write-Output "Uninstalling previous tSQLt"
-        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery 2>&1
-    }
-    # Azure doesn't need CLR setup
-    if (!$isAzure) {
-        $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $setupFile 2>&1
-    }
-    Write-Output "Installing tSQLt"
-    $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
-    foreach ($errorRecord in $sqlcmdOutput) {
-        if ($null -ne $errorRecord.Exception.Message) {
-            Write-Verbose -Message $errorRecord.Exception.Message -Verbose
-        }
+if ($CreateDatabase) {
+    Write-Output "Creating database [$Database]"
+    $sqlcmdOutput = & sqlcmd -S $SqlInstance -d "master" -Q $createDatabaseDatabaseQuery 2>&1
+}
+if ($Update) {
+    Write-Output "Uninstalling previous tSQLt"
+    $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -Q $uninstallQuery 2>&1
+}
+# Azure doesn't need CLR setup
+if (!$isAzure) {
+    $sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $setupFile 2>&1
+}
+Write-Output "Installing tSQLt"
+$sqlcmdOutput = & sqlcmd -S $SqlInstance -d $Database -i $installFile -r1 -m-1 2>&1 | Where-Object { $_ -notlike "Msg 50000*" }
+foreach ($errorRecord in $sqlcmdOutput) {
+    if ($null -ne $errorRecord.Exception.Message) {
+        Write-Verbose -Message $errorRecord.Exception.Message -Verbose
     }
 }
-# elseif ($IsWindows) {
-#     if ($CreateDatabase) {
-#         Write-Output "Creating [$Database]"
-#         Invoke-SqlCmd @connSplat -Database "master" -Query $createDatabaseDatabaseQuery -OutputSqlErrors $true
-#     }
-#     if ($Update) {
-#         Write-Output "Uninstalling previous tSQLt"
-#         Invoke-SqlCmd @connSplat -Database $Database -Query $uninstallQuery -OutputSqlErrors $true
-#     }
-#     # Azure doesn't need CLR setup
-#     if (!$isAzure) {
-#         Invoke-SqlCmd @connSplat -Database $Database -InputFile $setupFile -OutputSqlErrors $true
-#     }
-#     Write-Output "Installing tSQLt"
-#     Invoke-SqlCmd @connSplat -Database $Database -InputFile $installFile -Verbose -OutputSqlErrors $true
-# }
 
 Write-Output "Thanks for using tSQLt-Installer! Please ⭐ if you like!"
 Write-Output "tSQLt Website: https://tsqlt.org/"
