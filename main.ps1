@@ -26,7 +26,7 @@ if ($IsMacOs) {
 }
 
 # Is the target Azure SQL?
-if ($isLinux) {
+if ($isLinux -or $IsWindows) {
     # Docker SQL can be slow to start fully, bake in a cool off period
     Start-Sleep -Seconds 3
 
@@ -36,18 +36,18 @@ if ($isLinux) {
     }
     $isAzure = sqlcmd -S $SqlInstance -d "master" -Q $azureSqlQuery
 }
-elseif ($IsWindows) {
-    $connSplat = @{
-        ConnectionString = "Data Source=$SqlInstance;Integrated Security=True;TrustServerCertificate=true"
-    }
-    if ($User -and $Password) {
-        $SecPass = ConvertTo-SecureString -String $Password -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $SecPass
-        $connSplat.add("Credential", $Credential)
-    }
+# elseif ($IsWindows) {
+#     $connSplat = @{
+#         ConnectionString = "Data Source=$SqlInstance;Integrated Security=True;TrustServerCertificate=true"
+#     }
+#     if ($User -and $Password) {
+#         $SecPass = ConvertTo-SecureString -String $Password -AsPlainText -Force
+#         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $SecPass
+#         $connSplat.add("Credential", $Credential)
+#     }
 
-    $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSqlQuery -OutputSqlErrors $true
-}
+#     $isAzure = Invoke-SqlCmd @connSplat -Database "master" -Query $azureSqlQuery -OutputSqlErrors $true
+# }
 if ($isAzure) {
     if ($Version -ne $azureVersion) {
         Write-Output "Azure SQL target detected. Setting version to '$azureVersion'."
