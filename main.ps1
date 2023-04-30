@@ -38,7 +38,7 @@ if ($isLinux) {
 }
 elseif ($IsWindows) {
     $connSplat = @{
-        ServerInstance = $SqlInstance
+        ConnectionString = "Data Source=$SqlInstance;Integrated Security=True;TrustServerCertificate=true"
     }
     if ($User -and $Password) {
         $SecPass = ConvertTo-SecureString -String $Password -AsPlainText -Force
